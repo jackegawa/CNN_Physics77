@@ -46,3 +46,12 @@ class SGD:
             if p.grad is not None:
                 # Reset gradient to zero (keeping the shape)
                 p.grad.fill(0)
+
+    def schedule_lr(self, gamma):
+        """
+        Decays the learning rate by a factor of gamma.
+        
+        Args:
+            gamma (float): Factor to multiply the learning rate by.
+        """
+        self.lr *= gamma
