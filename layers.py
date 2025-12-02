@@ -16,7 +16,7 @@ class LinearLayer:
         self.weight = Tensor(0.01 * np.random.randn(in_features,out_features))
         self.matmul = MatMulOp()
         self.add = AddOp()
-        self.biases = Tensor(np.zeros((in_features,out_features)))
+        self.biases = Tensor(np.zeros((1,out_features)))
 
     def __call__(self,x):
         b = self.matmul(x,self.weight)

@@ -8,21 +8,26 @@ This will also define the backward and forward pass for each operation
 
 class ConvOP:
     def __call__(self, x,weight):
-        x_data = x.data  # shape (1, 28, 28)
-        W = weight.data  # shape (8, 1, 3, 3)
 
-        out = np.zeros((8, 26, 26))
+        x_data = x.data  # (1, C, H, W)
+        W = weight.data  # (K, C, 3, 3)
+
+        batch, C, H, Wimg = x_data.shape
+        K, Cw, Kh, Kw = W.shape
+
+        out = np.zeros((batch, K, H - 2, Wimg - 2))
 
         """
         This is on the order of magnitude O(n^3), pretty bad. Need to vectorize and speed this up or we will be training forever.
         Same for backward pass
         """
-        for k in range(8):
-            for i in range(26):
-                for j in range(26):
-                    patch = x_data[:, i:i + 3, j:j + 3]
-                    kernel = W[k, :, :, :]
-                    out[k, i, j] = np.sum(patch * kernel)
+
+        for k in range(K):
+            for i in range(H - 2):
+                for j in range(Wimg - 2):
+                    patch = x_data[0, :, i:i+3, j:j+3]   # (C,3,3)
+                    kernel = W[k]                        # (C,3,3)
+                    out[0, k, i, j] = np.sum(patch * kernel)
 
         return Tensor(out, parents=[x, weight], op=self)
 
@@ -31,15 +36,20 @@ class ConvOP:
         x_data = x.data
         W_data = weight.data
 
+        batch, C, H, Wimg = x_data.shape
+        out_channels, Cw, Kh, Kw = W_data.shape
+        out_h = H - 2
+        out_w = Wimg - 2
         d_x = np.zeros_like(x_data)
         d_W = np.zeros_like(W_data)
 
-        for k in range(8):
-            for i in range(26):
-                for j in range(26):
-                    patch = x_data[:, i:i+3, j:j+3]
-                    d_W[k, 0] += grad[k, i, j] * patch
-                    d_x[:, i:i+3, j:j+3] += grad[k, i, j] * W_data[k, 0]
+        for k in range(out_channels):
+            for i in range(H - 2):
+                for j in range(Wimg - 2):
+                    patch = x_data[0, :, i:i + 3, j:j + 3]  # (C,3,3)
+                    g = grad[0, k, i, j]
+                    d_W[k] += g * patch
+                    d_x[0, :, i:i + 3, j:j + 3] += g * W_data[k]
 
         return [d_x, d_W]
 
@@ -76,7 +86,8 @@ class AddOp:
 class FlattenOp:
     def __call__(self, x):
         shape = x.data.shape
-        out = x.data.reshape(-1)
+        batch = shape[0]
+        out = x.data.reshape(batch,-1)
         tensor = Tensor(out, parents=[x], op=self)
         tensor._orig_shape = shape
         return tensor
@@ -97,11 +108,13 @@ class SoftMaxOp:
         soft = z/np.sum(z,axis=1,keepdims=True)
 
         self.softmax = soft
-
         # now we can compute the loss
         m = x.shape[0]
         log_likelihood = -np.log(soft[np.arange(m),self.labels])
-        loss = log_likelihood/m
+
+        loss = np.mean(log_likelihood)
+
+        return Tensor(loss, parents=[logits], op=self)
 
 
 
