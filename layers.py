@@ -13,10 +13,10 @@ class Conv2D:
 
 class LinearLayer:
     def __init__(self,in_features,out_features):
-        self.weight = Tensor(0.01 * np.random.randn((in_features,out_features)))
+        self.weight = Tensor(0.01 * np.random.randn(in_features,out_features))
         self.matmul = MatMulOp()
         self.add = AddOp()
-        self.biases = np.zeros((in_features,out_features))
+        self.biases = Tensor(np.zeros((in_features,out_features)))
 
     def __call__(self,x):
         b = self.matmul(x,self.weight)
