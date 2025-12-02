@@ -93,8 +93,8 @@ class SoftMaxOp:
         x = logits.data
         #need to shift the logits to keep exponentials from exploding
         max_bit = np.max(x,axis=1,keepdims=True)
-        z = x -  max_bit
-        soft = np.exp(z)/np.sum(z,axis=1,keepdims=True)
+        z = np.exp(x - max_bit)
+        soft = z/np.sum(z,axis=1,keepdims=True)
 
         self.softmax = soft
 
@@ -112,7 +112,7 @@ class SoftMaxOp:
         dx[np.arange(batch), self.labels] -= 1
         dx /=batch
 
-        return [dx#]
+        return [dx]
 
 
 params =[]
