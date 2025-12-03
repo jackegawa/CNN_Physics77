@@ -1,3 +1,4 @@
+
 import numpy as np
 from tensor import Tensor
 """
@@ -6,52 +7,93 @@ This will also define the backward and forward pass for each operation
 
 """
 
+def im2col(input,kernel_size):
+    """
+    Helper function to vectorize our conv op
+    Turns an image into a column vector
+    """
+    B,C,H,W = input.shape
+    kH = kW = kernel_size
+    out_h = H - kH + 1
+    out_w = W - kW + 1
+    shape = (B, out_h, out_w, C, kH, kW)
+    strides = (
+        input.strides[0],
+        input.strides[2],
+        input.strides[3],
+        input.strides[1],
+        input.strides[2],
+        input.strides[3],
+    )
+
+    patches = np.lib.stride_tricks.as_strided(input, shape=shape, strides=strides)
+    patches = patches.reshape(B, out_h * out_w, C * kH * kW)
+    return patches
+
+def col2im(cols,in_shape, kernel_size):
+    B, C, H, W = in_shape
+    kH = kW = kernel_size
+    OH = H - kH + 1
+    OW = W - kW + 1
+    cols = cols.reshape(B, OH, OW, C, kH, kW)
+    cols = cols.transpose(0, 3, 1, 2, 4, 5)
+    dx = np.zeros((B, C, H, W))
+
+    for i in range(kH):
+        for j in range(kW):
+            dx[:, :, i:i + OH, j:j + OW] += cols[:, :, :, :, i, j]
+
+    return dx
+
+
 class ConvOP:
     def __call__(self, x,weight):
 
         x_data = x.data  # (1, C, H, W)
         W = weight.data  # (K, C, 3, 3)
 
-        batch, C, H, Wimg = x_data.shape
-        K, Cw, Kh, Kw = W.shape
+        B, C, H, Wimg = x_data.shape
+        K, Cw, kH, kW = W.shape
+        OH = H - kH + 1
+        OW = Wimg - kW + 1
 
-        out = np.zeros((batch, K, H - 2, Wimg - 2))
+        patches = im2col(x_data, 3) #get patches
 
-        """
-        This is on the order of magnitude O(n^3), pretty bad. Need to vectorize and speed this up or we will be training forever.
-        Same for backward pass
-        """
+        W_col = W.reshape(K, -1).T #shape weights
 
-        for k in range(K):
-            for i in range(H - 2):
-                for j in range(Wimg - 2):
-                    patch = x_data[0, :, i:i+3, j:j+3]   # (C,3,3)
-                    kernel = W[k]                        # (C,3,3)
-                    out[0, k, i, j] = np.sum(patch * kernel)
+        out = patches @ W_col  # (B, OH*OW, K)
+        out = out.reshape(B, OH, OW, K).transpose(0, 3, 1, 2)
 
         return Tensor(out, parents=[x, weight], op=self)
 
     def backward(self, out_tensor, grad):
-        x, weight = out_tensor.parents
+        x,weight = out_tensor.parents
         x_data = x.data
-        W_data = weight.data
+        W = weight.data
 
-        batch, C, H, Wimg = x_data.shape
-        out_channels, Cw, Kh, Kw = W_data.shape
-        out_h = H - 2
-        out_w = Wimg - 2
-        d_x = np.zeros_like(x_data)
-        d_W = np.zeros_like(W_data)
+        B, C, H, Wimg = x_data.shape
+        K, Cw, kH, kW = W.shape
 
-        for k in range(out_channels):
-            for i in range(H - 2):
-                for j in range(Wimg - 2):
-                    patch = x_data[0, :, i:i + 3, j:j + 3]  # (C,3,3)
-                    g = grad[0, k, i, j]
-                    d_W[k] += g * patch
-                    d_x[0, :, i:i + 3, j:j + 3] += g * W_data[k]
+        OH = H - kH + 1
+        OW = Wimg - kW + 1
 
-        return [d_x, d_W]
+        #shape grad
+        grad_col = grad.transpose(0, 2, 3, 1).reshape(B, OH*OW, K)
+
+        patches = im2col(x_data, kH)
+        dW = np.zeros_like(W)
+
+        for b in range(B):
+            dW += (grad_col[b].T @ patches[b]).reshape(W.shape)
+
+        W_col = W.reshape(K, -1).T
+        dx_col = grad_col @ W_col.T
+
+
+        dx = col2im(dx_col,x_data.shape, kH)
+
+        return [dx, dW]
+
 
 class ReLUOP:
     def __call__(self, x):
