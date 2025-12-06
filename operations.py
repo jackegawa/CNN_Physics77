@@ -57,7 +57,7 @@ class ConvOP:
         OH = H - kH + 1
         OW = Wimg - kW + 1
 
-        patches = im2col(x_data, 3) #get patches
+        patches = im2col(x_data, kH)  # (B, OH*OW, C*kH*kW)
 
         W_col = W.reshape(K, -1).T #shape weights
 
