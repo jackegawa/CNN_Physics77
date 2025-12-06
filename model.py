@@ -37,3 +37,13 @@ class CNN:
         p += self.fc1.params()
         p += self.fc2.params()
         return p
+    
+    def summary(self):
+        return {
+            f"Conv2D(in={self.in_channels}, out={self.out_channels}, k={self.kernel_size})",
+            f"ReLU",
+            f"Flatten",
+            f"Linear(in={self.flat_dim}, out={self.hidden_dim})",
+            f"ReLU",
+            f"Linear(in={self.hidden_dim}, out={self.num_classes})"
+        }
