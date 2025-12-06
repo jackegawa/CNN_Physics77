@@ -56,6 +56,15 @@ class SGD:
         """
         self.lr *= gamma
 
+    def summary(self):
+        """
+        Returns a summary of the optimizer configuration.
+        """
+        return {
+            "optimizer": "SGD",
+            "learning_rate": self.lr
+        }
+
 class Adam:
     """
     Adam optimizer (NumPy version).
@@ -104,3 +113,15 @@ class Adam:
     def schedule_lr(self, gamma):
         """ decay learning rate """
         self.lr *= gamma
+
+    def summary(self):
+        """
+        Returns a summary of the optimizer configuration.
+        """
+        return {
+            "optimizer": "Adam",
+            "learning_rate": self.lr,
+            "beta1": self.beta1,
+            "beta2": self.beta2,
+            "epsilon": self.eps
+        }
