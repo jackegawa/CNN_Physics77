@@ -13,7 +13,7 @@ class SGD:
         # 2. loss.backward()
         # 3. optimizer.step()
     """
-    def __init__(self, params, lr=0.01):
+    def __init__(self, params, lr=0.001):
         """
         Args:
             params (list): A list of Tensor objects. Each object must have:
@@ -54,4 +54,53 @@ class SGD:
         Args:
             gamma (float): Factor to multiply the learning rate by.
         """
+        self.lr *= gamma
+
+class Adam:
+    """
+    Adam optimizer (NumPy version).
+    """
+
+    def __init__(self, params, lr=0.001, beta1=0.9, beta2=0.999, eps=1e-8):
+        self.params = list(params)
+        self.lr = lr
+        self.beta1 = beta1
+        self.beta2 = beta2
+        self.eps = eps
+
+        # State buffers (same shape as parameters)
+        self.m = [np.zeros_like(p.data) for p in self.params]
+        self.v = [np.zeros_like(p.data) for p in self.params]
+
+        self.t = 0  # time step
+
+    def step(self):
+        self.t += 1  # increase timestep
+
+        for i, p in enumerate(self.params):
+            if p.grad is None:
+                continue
+
+            g = p.grad
+
+            # Update biased first moment estimate
+            self.m[i] = self.beta1 * self.m[i] + (1 - self.beta1) * g
+
+            # Update biased second moment estimate
+            self.v[i] = self.beta2 * self.v[i] + (1 - self.beta2) * (g * g)
+
+            # Compute bias-corrected moments
+            m_hat = self.m[i] / (1 - self.beta1 ** self.t)
+            v_hat = self.v[i] / (1 - self.beta2 ** self.t)
+
+            # Update parameters
+            p.data -= self.lr * m_hat / (np.sqrt(v_hat) + self.eps)
+
+    def zero_grad(self):
+        for p in self.params:
+            if p.grad is not None:
+                p.grad.fill(0)
+
+    def schedule_lr(self, gamma):
+        """ decay learning rate """
         self.lr *= gamma
