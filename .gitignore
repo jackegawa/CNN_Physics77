@@ -1,0 +1,7 @@
+# Caches
+__pycache__/
+.DS_Store/
+
+# Data files
+data/
+test/
