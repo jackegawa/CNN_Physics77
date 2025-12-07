@@ -9,8 +9,12 @@ This will also define the backward and forward pass for each operation
 
 def im2col(input,kernel_size):
     """
-    Helper function to vectorize our conv op
-    Turns an image into a column vector
+    Vectorizes image blocks for convolution (im2col).
+    Args:
+        input_data: (B, C, H, W)
+        kernel_size: int (k)
+    Returns:
+        patches: (B, OH*OW, C*k*k)
     """
     B,C,H,W = input.shape
     kH = kW = kernel_size
@@ -31,14 +35,20 @@ def im2col(input,kernel_size):
     return patches
 
 def col2im(cols,in_shape, kernel_size):
+    """
+    Inverse of im2col (used in backward pass).
+    """
     B, C, H, W = in_shape
     kH = kW = kernel_size
     OH = H - kH + 1
     OW = W - kW + 1
+
     cols = cols.reshape(B, OH, OW, C, kH, kW)
     cols = cols.transpose(0, 3, 1, 2, 4, 5)
+
     dx = np.zeros((B, C, H, W))
 
+    # Overlap-add to reconstruct the image
     for i in range(kH):
         for j in range(kW):
             dx[:, :, i:i + OH, j:j + OW] += cols[:, :, :, :, i, j]
@@ -48,7 +58,9 @@ def col2im(cols,in_shape, kernel_size):
 
 class ConvOP:
     def __call__(self, x,weight):
-
+        """
+        Forward: (B, C, H, W) * (K, C, k, k) -> (B, K, OH, OW)
+        """
         x_data = x.data  # (1, C, H, W)
         W = weight.data  # (K, C, 3, 3)
 
@@ -57,11 +69,16 @@ class ConvOP:
         OH = H - kH + 1
         OW = Wimg - kW + 1
 
+        # 1. Vectorize input
         patches = im2col(x_data, kH)  # (B, OH*OW, C*kH*kW)
 
-        W_col = W.reshape(K, -1).T #shape weights
+        # 2. Reshape weights
+        W_col = W.reshape(K, -1).T    # (C*kH*kW, K)
 
-        out = patches @ W_col  # (B, OH*OW, K)
+        # 3. Perform matrix multiplication
+        out = patches @ W_col         # (B, OH*OW, K)
+
+        # 4. Reshape output
         out = out.reshape(B, OH, OW, K).transpose(0, 3, 1, 2)
 
         return Tensor(out, parents=[x, weight], op=self)
@@ -77,18 +94,20 @@ class ConvOP:
         OH = H - kH + 1
         OW = Wimg - kW + 1
 
-        #shape grad
+        #Gradient w.r.t output (B, K, OH, OW) -> (B, OH*OW, K)
         grad_col = grad.transpose(0, 2, 3, 1).reshape(B, OH*OW, K)
 
+        # 1. Gradient w.r.t. weights (dW)
         patches = im2col(x_data, kH)
         dW = np.zeros_like(W)
 
+        # Sum over batches
         for b in range(B):
             dW += (grad_col[b].T @ patches[b]).reshape(W.shape)
 
+        # 2. Gradient w.r.t. input (dx)
         W_col = W.reshape(K, -1).T
         dx_col = grad_col @ W_col.T
-
 
         dx = col2im(dx_col,x_data.shape, kH)
 
