@@ -1,6 +1,8 @@
 # Caches
 __pycache__/
 .DS_Store/
+.vscode/
+.DS_Store
 
 # Data files
 data/
