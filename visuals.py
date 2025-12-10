@@ -134,9 +134,10 @@ def _get_label(log_data: dict, custom_name: str = None) -> str:
     match = re.search(r"_k(\d+)_c(\d+)_h(\d+)", fname)
     if match:
         k, c, h = match.groups()
-        return f"{prefix} {opt} (K={k}, C={c}, H={h})"
+
+        return f"{prefix} (K={k}, C={c}, H={h})", f"{opt}"
     
-    return f"{prefix} {opt}"
+    return f"{prefix}", f"{opt}"
 
 def _smooth(data: list, window: int = 50) -> np.ndarray:
     """
@@ -178,7 +179,10 @@ def plot_loss_comparison(
         losses = [s['loss'] for s in stats]
         
         # Use dynamic label if user didn't provide a specific one, or append to it
-        final_label = _get_label(data) if label is None else label
+        if label is None:
+            final_label, _ = _get_label(data)
+        else:
+            final_label = label
         
         plt.plot(epochs, losses, marker='o', label=final_label)
     
@@ -218,7 +222,10 @@ def plot_accuracy_comparison(
         if accs and max(accs) <= 1.0:
             accs = [a * 100 for a in accs]
             
-        final_label = _get_label(data) if label is None else label
+        if label is None:
+            final_label, _ = _get_label(data)
+        else:
+            final_label = label
         plt.plot(epochs, accs, marker='s', label=final_label)
     
     plt.title("Test Accuracy Comparison (Higher is Better)")
@@ -247,12 +254,13 @@ def plot_detailed_loss(path: str, window: int = 50, title: str = None):
         return
 
     smooth_loss = _smooth(raw_loss, window)
+    l = _get_label(data)
 
     plt.figure(figsize=(12, 4))
     plt.plot(raw_loss, color='lightgray', alpha=0.5, label='Raw Step Loss')
-    plt.plot(smooth_loss, linewidth=1.5, color='#1f77b4', label=f'Smoothed (MA={window})')
+    plt.plot(smooth_loss, linewidth=1.5, color='#1f77b4', label=f'Smoothed (MA={window}) - {l[0]} ({l[1]})')
     
-    final_title = title if title else f"Detailed Training Dynamics: {_get_label(data)}"
+    final_title = title if title else f"Detailed Training Dynamics: {l[0]}"
     plt.title(final_title)
     plt.xlabel("Step (Batch)")
     plt.ylabel("Loss")
@@ -274,14 +282,14 @@ def plot_gradient_norm(path: str, window: int = 50):
     if not grad_norms:
         print("[Warn] No gradient norm data found.")
         return
-    
+    l = _get_label(data)
     smooth_grad = _smooth(grad_norms, window)
 
     plt.figure(figsize=(12, 4))
     plt.plot(grad_norms, color='lightgreen', alpha=0.4, label='Raw Norm')
-    plt.plot(smooth_grad, color='green', linewidth=1.5, label=f'Smoothed (MA={window})')
+    plt.plot(smooth_grad, color='green', linewidth=1.5, label=f'Smoothed (MA={window}) - {l[0]} ({l[1]})')
     
-    plt.title(f"Gradient Stability Check: {_get_label(data)}")
+    plt.title(f"Gradient Stability Check: {l[0]}")
     plt.xlabel("Step")
     plt.ylabel("L2 Norm of Gradients")
     plt.legend()
@@ -318,7 +326,8 @@ def plot_confusion_matrix(path: str):
             for j in range(10):
                 plt.text(j, i, cm[i, j], ha="center", va="center", color="black")
 
-    plt.title(f"Confusion Matrix: {_get_label(data)}")
+    l = _get_label(data)
+    plt.title(f"Confusion Matrix: {l[0]}")
     plt.xlabel("Predicted Label")
     plt.ylabel("True Label")
     plt.grid(False)
@@ -355,7 +364,8 @@ def plot_efficiency_frontier(log_paths: List[str]):
             params.append(p_count)
             accs.append(final_acc)
             times.append(total_time)
-            labels.append(_get_label(data))
+            l = _get_label(data)
+            labels.append(f"{l[0]}")
 
     if not params:
         print("[Error] No valid data extracted from logs.")
@@ -443,4 +453,123 @@ def plot_system_benchmark(custom_path: str, torch_path: str):
                 fontsize=14, y=1.05)
     
     plt.tight_layout()
+    plt.show()
+
+def plot_multi_loss(log_paths: List[str], title: str = "Multi-Run Loss Comparison"):
+    """
+    Plots Training Loss curves for an arbitrary number of logs.
+    """
+    plt.figure(figsize=(10, 6))
+    for path in log_paths:
+        data = _load_log(path)
+        if not data: continue
+        
+        stats = data['training_results']['per_epoch_stats']
+        epochs = [s['epoch'] for s in stats]
+        losses = [s['loss'] for s in stats]
+
+        l = _get_label(data)
+        
+        plt.plot(epochs, losses, marker='o', linewidth=2, label=f"{l[0]} ({l[1]})")
+    
+    plt.title(title)
+    plt.xlabel("Epoch")
+    plt.ylabel("Training Loss")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.show()
+
+def plot_multi_accuracy(log_paths: List[str], title: str = "Multi-Run Accuracy Comparison"):
+    """
+    Plots Test Accuracy curves for an arbitrary number of logs.
+    """
+    plt.figure(figsize=(10, 6))
+    for path in log_paths:
+        data = _load_log(path)
+        if not data: continue
+        
+        stats = data['training_results']['per_epoch_stats']
+        epochs = [s['epoch'] for s in stats]
+        accs = [s['accuracy'] * 100 for s in stats]
+        
+        l = _get_label(data)
+        plt.plot(epochs, accs, marker='s', linewidth=2, label=f"{l[0]} ({l[1]})")
+    
+    plt.title(title)
+    plt.xlabel("Epoch")
+    plt.ylabel("Test Accuracy (%)")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.show()
+
+def plot_multi_grad_norm(log_paths: List[str], window: int = 50, title: str = "Gradient Norm Stability Comparison"):
+    """
+    Plots smoothed Gradient Norms for multiple runs to compare training stability.
+    Useful for seeing how Adam vs SGD gradients fluctuate.
+    """
+    plt.figure(figsize=(12, 5))
+    for path in log_paths:
+        data = _load_log(path)
+        if not data: continue
+        
+        grad_norms = data['training_results'].get('detailed_grad_norm', [])
+        if not grad_norms: continue
+        
+        smooth_grad = _smooth(grad_norms, window)
+        l = _get_label(data)
+        plt.plot(smooth_grad, linewidth=1.5, label=f"{l[0]} ({l[1]})")
+    
+    plt.title(title)
+    plt.xlabel(f"Step (Smoothed window={window})")
+    plt.ylabel("Gradient L2 Norm")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.show()
+
+def plot_performance_bar(log_paths: List[str], title: str = "Performance Benchmark: Time & Memory"):
+    """
+    Bar chart comparing Total Training Time and Peak Memory for multiple runs.
+    """
+    labels = []
+    times = []
+    mems = []
+    
+    for path in log_paths:
+        data = _load_log(path)
+        if not data: continue
+        
+        stats = data['training_results']['per_epoch_stats']
+        if not stats: continue
+        
+        l = _get_label(data)
+        
+        labels.append(f"{l[0]} ({l[1]})")
+        times.append(sum(s['time'] for s in stats))
+        mems.append(max(s['memory_peak'] for s in stats))
+    
+    x = np.arange(len(labels))
+    width = 0.35
+    
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+    
+    # Plot Time (Left Y-Axis)
+    rects1 = ax1.bar(x - width/2, times, width, label='Total Time (s)', color='#4c72b0', alpha=0.8)
+    ax1.set_ylabel('Time (s)', color='#4c72b0', fontweight='bold')
+    ax1.tick_params(axis='y', labelcolor='#4c72b0')
+    ax1.set_title(title)
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(labels, rotation=15, ha="right")
+    
+    # Plot Memory (Right Y-Axis)
+    ax2 = ax1.twinx()
+    rects2 = ax2.bar(x + width/2, mems, width, label='Peak Memory (MB)', color='#55a868', alpha=0.8)
+    ax2.set_ylabel('Memory (MB)', color='#55a868', fontweight='bold')
+    ax2.tick_params(axis='y', labelcolor='#55a868')
+    
+    # Legend
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left')
+    
+    fig.tight_layout()
     plt.show()
