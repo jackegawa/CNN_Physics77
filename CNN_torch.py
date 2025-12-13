@@ -1,13 +1,14 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torchvision import datasets, transforms
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, TensorDataset
+from data import load_mnist
 import numpy as np
 import time
 import tracemalloc
 import json
 import os
+import random
 import sys
 from contextlib import redirect_stdout
 from helper import log_to_json, get_memory_snapshot
@@ -128,25 +129,31 @@ class TorchCNN(nn.Module):
 
 def get_data_loaders(batch_size=64):
     """
-    Creates DataLoaders for the MNIST dataset.
-
-    Args:
-        batch_size (int): Number of samples per batch.
-
-    Returns:
-        tuple: (train_loader, test_loader)
+    Creates DataLoaders for the MNIST dataset using the SAME numpy arrays
+    as our custom framework (data.load_mnist).
     """
-    # [ALIGNMENT] ToTensor converts [0, 255] -> [0.0, 1.0].
-    # This matches the division by 255.0 in the custom data.py.
-    transform = transforms.Compose([transforms.ToTensor()])
-    
-    train_dataset = datasets.MNIST("./data", train=True, download=True, transform=transform)
-    test_dataset = datasets.MNIST("./data", train=False, download=True, transform=transform)
+    # Use the same data loading function to ensure identical data
+    x_train, y_train, x_test, y_test = load_mnist()
 
-    # num_workers=0 ensures data loading happens in the main process, 
-    # providing a fairer speed comparison to simple NumPy loading.
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
-    test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False, num_workers=0)
+    # Convert numpy arrays to PyTorch tensors
+    x_train_t = torch.from_numpy(x_train).float()   # (N, 1, 28, 28), [0,1]
+    x_test_t  = torch.from_numpy(x_test).float()
+    y_train_t = torch.from_numpy(y_train).long()    # labels
+    y_test_t  = torch.from_numpy(y_test).long()
+
+    # Create TensorDatasets
+    train_dataset = TensorDataset(x_train_t, y_train_t)
+    test_dataset  = TensorDataset(x_test_t,  y_test_t)
+
+    # Create DataLoaders
+    train_loader = DataLoader(train_dataset,
+                              batch_size=batch_size,
+                              shuffle=True,
+                              num_workers=0)
+    test_loader  = DataLoader(test_dataset,
+                              batch_size=1000,
+                              shuffle=False,
+                              num_workers=0)
 
     return train_loader, test_loader
 
@@ -220,6 +227,13 @@ def train_torch(
     
     # Default to CPU for a fair comparison with the NumPy-only custom framework.
     # Change to 'cuda' or 'mps' only if you want to benchmark hardware acceleration.
+    # RNG Seed
+    # RNG Seed
+    seed = 67
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+
     device = torch.device("cpu") 
 
     if not os.path.exists(log_path):

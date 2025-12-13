@@ -43,7 +43,7 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 import re
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Tuple
 
 # Attempt to import seaborn for better heatmaps; degrade gracefully if not found.
 try:
@@ -154,8 +154,8 @@ def _smooth(data: list, window: int = 50) -> np.ndarray:
 def plot_loss_comparison(
     custom: str, 
     torch: str, 
-    custom_label: str = "Custom Model", 
-    torch_label: str = "PyTorch Baseline"
+    custom_label: str = "Custom", 
+    torch_label: str = "PyTorch"
 ):
     """
     Plots a comparison of TRAINING LOSS per epoch between Custom and PyTorch models.
@@ -186,18 +186,19 @@ def plot_loss_comparison(
         
         plt.plot(epochs, losses, marker='o', label=final_label)
     
-    plt.title("Training Loss Comparison (Lower is Better)")
+    plt.title("Training Loss Comparison")
     plt.xlabel("Epoch")
     plt.ylabel("Average Cross-Entropy Loss")
     plt.legend()
     plt.grid(True, alpha=0.3)
+    plt.savefig("loss_comparison.png")
     plt.show()
 
 def plot_accuracy_comparison(
     custom: str, 
     torch: str, 
-    custom_label: str = "Custom Model", 
-    torch_label: str = "PyTorch Baseline"
+    custom_label: str = "Custom", 
+    torch_label: str = "PyTorch"
 ):
     """
     Plots a comparison of TEST ACCURACY per epoch between Custom and PyTorch models.
@@ -228,7 +229,7 @@ def plot_accuracy_comparison(
             final_label = label
         plt.plot(epochs, accs, marker='s', label=final_label)
     
-    plt.title("Test Accuracy Comparison (Higher is Better)")
+    plt.title("Test Accuracy Comparison")
     plt.xlabel("Epoch")
     plt.ylabel("Accuracy (%)")
     plt.legend()
@@ -260,20 +261,16 @@ def plot_detailed_loss(path: str, window: int = 50, title: str = None):
     plt.plot(raw_loss, color='lightgray', alpha=0.5, label='Raw Step Loss')
     plt.plot(smooth_loss, linewidth=1.5, color='#1f77b4', label=f'Smoothed (MA={window}) - {l[0]} ({l[1]})')
     
-    final_title = title if title else f"Detailed Training Dynamics: {l[0]}"
+    final_title = title if title else f"Training Loss over Steps within One Epoch: {l[0]}"
     plt.title(final_title)
-    plt.xlabel("Step (Batch)")
+    plt.xlabel("Step")
     plt.ylabel("Loss")
     plt.legend()
     plt.show()
 
-def plot_gradient_norm(path: str, window: int = 50):
+def plot_gradient_norm(path: str, window: int = 50, title: str = None):
     """
     Plots the L2 NORM of gradients over time.
-    Critical for debugging Vanishing or Exploding gradients.
-
-    Args:
-        path (str): Path to the JSON log.
     """
     data = _load_log(path)
     if not data: return
@@ -283,15 +280,18 @@ def plot_gradient_norm(path: str, window: int = 50):
         print("[Warn] No gradient norm data found.")
         return
     l = _get_label(data)
+
     smooth_grad = _smooth(grad_norms, window)
 
     plt.figure(figsize=(12, 4))
-    plt.plot(grad_norms, color='lightgreen', alpha=0.4, label='Raw Norm')
-    plt.plot(smooth_grad, color='green', linewidth=1.5, label=f'Smoothed (MA={window}) - {l[0]} ({l[1]})')
-    
-    plt.title(f"Gradient Stability Check: {l[0]}")
+    plt.plot(grad_norms, color='lightgray', alpha=0.5, label='Raw Grad Norm')
+    plt.plot(smooth_grad, linewidth=1.5, label=f'Smoothed (MA window={window}) - {l}')
+    if title is not None:
+        plt.title(title)
+    else:
+        plt.title("Gradients Norm")
     plt.xlabel("Step")
-    plt.ylabel("L2 Norm of Gradients")
+    plt.ylabel("Gradient Norm")
     plt.legend()
     plt.show()
 
@@ -424,7 +424,7 @@ def plot_system_benchmark(custom_path: str, torch_path: str):
     times = [c_time, t_time]
     bars1 = ax1.bar(labels, times, width, color=colors, alpha=0.8)
     ax1.set_ylabel('Avg Time per Epoch (seconds)')
-    ax1.set_title(f'Training Speed Comparison (Lower is Better)')
+    ax1.set_title(f'Training Speed Comparison')
     ax1.grid(axis='y', linestyle='--', alpha=0.5)
     
     # Annotate values
@@ -437,7 +437,7 @@ def plot_system_benchmark(custom_path: str, torch_path: str):
     mems = [c_mem, t_mem]
     bars2 = ax2.bar(labels, mems, width, color=colors, alpha=0.8)
     ax2.set_ylabel('Peak Memory Usage (MB)')
-    ax2.set_title(f'Memory Efficiency Comparison (Lower is Better)')
+    ax2.set_title(f'Memory Efficiency Comparison')
     ax2.grid(axis='y', linestyle='--', alpha=0.5)
     
     # Annotate values
@@ -447,10 +447,7 @@ def plot_system_benchmark(custom_path: str, torch_path: str):
                 f'{height:.1f} MB', ha='center', va='bottom', fontsize=12, fontweight='bold')
     
     # Calculate multiples difference and set as title
-    speedup = c_time / t_time if t_time > 0 else 0
-    mem_diff = c_mem / t_mem if t_mem > 0 else 0
-    plt.suptitle(f"Benchmark Summary: PyTorch is {speedup:.1f}x Faster | Custom uses {mem_diff:.1f}x Memory", 
-                fontsize=14, y=1.05)
+    plt.suptitle(f"Benchmark Comparison")
     
     plt.tight_layout()
     plt.show()
@@ -529,47 +526,78 @@ def plot_multi_grad_norm(log_paths: List[str], window: int = 50, title: str = "G
 def plot_performance_bar(log_paths: List[str], title: str = "Performance Benchmark: Time & Memory"):
     """
     Bar chart comparing Total Training Time and Peak Memory for multiple runs.
+    X labels: Custom/PyTorch + optimizer only.
+    Legend: top-right, compact (2 items).
     """
-    labels = []
-    times = []
-    mems = []
-    
+
+    def _short_framework(model_label: str) -> str:
+        if "PyTorch" in model_label:
+            return "PyTorch"
+        if "Custom" in model_label:
+            return "Custom"
+        parts = (model_label or "").split()
+        return parts[0] if parts else "Unknown"
+
+    labels, times, mems = [], [], []
+
     for path in log_paths:
         data = _load_log(path)
-        if not data: continue
-        
-        stats = data['training_results']['per_epoch_stats']
-        if not stats: continue
-        
-        l = _get_label(data)
-        
-        labels.append(f"{l[0]} ({l[1]})")
-        times.append(sum(s['time'] for s in stats))
-        mems.append(max(s['memory_peak'] for s in stats))
-    
+        if not data:
+            continue
+
+        stats = data.get('training_results', {}).get('per_epoch_stats', [])
+        if not stats:
+            continue
+
+        model_label, opt_label = _get_label(data)
+        labels.append(f"{_short_framework(model_label)} ({opt_label})")
+
+        times.append(sum(s.get('time', 0.0) for s in stats))
+        mems.append(max(s.get('memory_peak', 0.0) for s in stats))
+
     x = np.arange(len(labels))
     width = 0.35
-    
+
+    # ---- color scheme ----
+    time_color = "#4c72b0"    # blue
+    mem_color  = "#55a868"    # green
+
     fig, ax1 = plt.subplots(figsize=(12, 6))
-    
-    # Plot Time (Left Y-Axis)
-    rects1 = ax1.bar(x - width/2, times, width, label='Total Time (s)', color='#4c72b0', alpha=0.8)
-    ax1.set_ylabel('Time (s)', color='#4c72b0', fontweight='bold')
-    ax1.tick_params(axis='y', labelcolor='#4c72b0')
+
+    # ---- Time (left y-axis) ----
+    rects1 = ax1.bar(
+        x - width/2, times, width,
+        label='Total Time (s)',
+        color=time_color,
+        alpha=0.85
+    )
+    ax1.set_ylabel('Time (s)', color=time_color, fontweight='bold')
+    ax1.tick_params(axis='y', labelcolor=time_color)
     ax1.set_title(title)
     ax1.set_xticks(x)
-    ax1.set_xticklabels(labels, rotation=15, ha="right")
-    
-    # Plot Memory (Right Y-Axis)
+    ax1.set_xticklabels(labels, rotation=0, ha="center")
+
+    # ---- Memory (right y-axis) ----
     ax2 = ax1.twinx()
-    rects2 = ax2.bar(x + width/2, mems, width, label='Peak Memory (MB)', color='#55a868', alpha=0.8)
-    ax2.set_ylabel('Memory (MB)', color='#55a868', fontweight='bold')
-    ax2.tick_params(axis='y', labelcolor='#55a868')
-    
-    # Legend
-    lines1, labels1 = ax1.get_legend_handles_labels()
-    lines2, labels2 = ax2.get_legend_handles_labels()
-    ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left')
-    
+    rects2 = ax2.bar(
+        x + width/2, mems, width,
+        label='Peak Memory (MB)',
+        color=mem_color,
+        alpha=0.85
+    )
+    ax2.set_ylabel('Memory (MB)', color=mem_color, fontweight='bold')
+    ax2.tick_params(axis='y', labelcolor=mem_color)
+
+    # ---- Legend (top-right, compact) ----
+    ax1.legend(
+        [rects1, rects2],
+        ['Total Time (s)', 'Peak Memory (MB)'],
+        loc='upper right',
+        frameon=True,
+        framealpha=0.9
+    )
+
     fig.tight_layout()
+    ax1.grid(False)
+    ax2.grid(False)
     plt.show()

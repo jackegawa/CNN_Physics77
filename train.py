@@ -1,5 +1,6 @@
 import numpy as np
 import time
+import random
 import tracemalloc
 import os
 import sys
@@ -45,6 +46,11 @@ def train(
     Returns:
         str: Path to the saved log file.
     """
+    # RNG Seed
+    seed = 67
+    np.random.seed(seed)
+    random.seed(seed)
+
     if not os.path.exists(log_path):
         os.makedirs(log_path)
         
