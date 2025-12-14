@@ -1,15 +1,6 @@
 from tensorflow.keras.datasets import mnist
 
 def load_mnist():
-    """
-    Loads MNIST dataset using Keras (assumes TensorFlow is installed).
-    
-    Returns:
-        x_train: (N, 1, 28, 28) normalized to [0, 1]
-        y_train: (N,) labels
-        x_test:  (N, 1, 28, 28) normalized
-        y_test:  (N,) labels
-    """
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
     # Normalize to [0,1]
