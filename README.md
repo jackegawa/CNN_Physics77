@@ -4,7 +4,7 @@ This repository implements a Convolutional Neural Network (CNN) from scratch usi
 
 Designed as a computational physics project, this framework builds the deep learning stack from **first principles**. It includes a rigorous benchmarking suite that compares the custom implementation against a **PyTorch** baseline to validate mathematical correctness, convergence behavior, and memory efficiency.
 
-## 🚀 Key Features
+## Key Features
 
 ### 1. Core Implementations
 + **Custom Autograd Engine**: A dynamic computation graph with a `Tensor` class supporting gradient accumulation and automatic backpropagation (DAG).
@@ -13,11 +13,11 @@ Designed as a computational physics project, this framework builds the deep lear
 + **Optimizers**: Custom implementations of **SGD** and **Adam** (with moment tracking and bias correction).
 
 ### 2. Scientific Benchmarking
-An "Apples-to-Apples" comparison suite ensuring matched architecture, matched initialization scheme ($\mathcal{N}(0, 0.01)$), identical data, and controlled seeding for reproducibility to measure pure framework overhead:
-+ **Efficiency Frontier**: Analyzing the trade-off between parameter count, accuracy, and training time.
-+ **Gradient Stability**: Monitoring $||\nabla \theta||_2$ to ensure numerical stability in the custom backward pass.
+All testing is designed to be compared against a PyTorch model with identical initial conditions to ensure accurate and valuable benchmarking data:
++ **Efficiency **: Analyzing the trade-off between parameter count, accuracy, and training time.
++ **Gradient**: Monitoring $||\nabla \theta||_2$ to ensure numerical stability in the custom backward pass.
 
-## 📂 Project Structure
+## Project Structure
 
 ```bash
 CNN_Physics77/
