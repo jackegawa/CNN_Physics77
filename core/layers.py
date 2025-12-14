@@ -5,7 +5,6 @@ from .operations import *
 class Conv2D:
     """
     Convolutional Layer.
-    Weights initialized with $\mathcal{N}(0, 0.01)$.
     """
     def __init__(self, in_channels, out_channels, kernel_size):
         # Weight shape: (Out, In, k, k)
@@ -21,7 +20,6 @@ class Conv2D:
 class LinearLayer:
     """
     Fully Connected (Dense) Layer.
-    Weights initialized with $\mathcal{N}(0, 0.01)$.
     """
     def __init__(self, in_features, out_features):
         self.weight = Tensor(0.01 * np.random.randn(in_features, out_features))
