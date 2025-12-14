@@ -2,12 +2,8 @@ import numpy as np
 from .tensor import Tensor
 
 """
-Mathematical Operations & Autograd Functions
-============================================
-
-This module defines the forward and backward passes for CNN building blocks.
-All operations must support the autograd engine by saving parent tensors
-and implementing a `backward` method returning gradients for inputs.
+Operations for CNN
+Each op has a forward and backward pass defined
 """
 
 def im2col(input_data, kernel_size):
@@ -76,10 +72,6 @@ def col2im(cols, in_shape, kernel_size):
 
 
 class ConvOP:
-    """
-    Forward: $$Y = X * W$$ via GEMM (im2col).
-    Backward: Computes $dL/dX$ and $dL/dW$.
-    """
     def __call__(self, x, weight):
         """
         Args:
@@ -139,7 +131,6 @@ class ConvOP:
 
 
 class ReLUOP:
-    """Rectified Linear Unit: $$f(x) = \max(0, x)$$"""
     def __call__(self, x):
         out = np.maximum(0, x.data)
         return Tensor(out, parents=[x], op=self)
@@ -150,7 +141,6 @@ class ReLUOP:
         return [grad * (x.data > 0)]
 
 class MatMulOp:
-    """Matrix Multiplication: $$Y = X W^T$$"""
     def __call__(self, x, w):
         # x: (B, in), w: (out, in) -> out: (B, out) via x @ w.T
         return Tensor(x.data @ w.data, parents=[x, w], op=self)
@@ -174,7 +164,7 @@ class AddOp:
 
 
 class FlattenOp:
-    """Reshapes (B, C, H, W) -> (B, Features)."""
+"""Reshape"""
     def __call__(self, x):
         shape = x.data.shape
         batch = shape[0]
@@ -189,8 +179,6 @@ class FlattenOp:
 class SoftMaxOp:
     """
     Combined Softmax + Cross Entropy Loss.
-    
-    $$Loss = - \log \left( \frac{e^{x_y}}{\sum e^{x_j}} \right)$$
     """
     def __call__(self, logits, y):
         self.labels = y
@@ -212,7 +200,7 @@ class SoftMaxOp:
 
     def backward(self, out_tensor, grad):
         """
-        Gradient of CE + Softmax is simply: $$p - y$$
+        Gradient of CE + Softmax
         """
         batch = self.softmax.shape[0]
         dx = self.softmax.copy()
