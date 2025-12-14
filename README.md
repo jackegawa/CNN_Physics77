@@ -54,7 +54,7 @@ CNN_Physics77/
     cd CNN_Physics77
     ```
 
-## 💻 Usage
+## Usage
 
 The project is controlled via `main.py`, offering different modes for training and analysis.
 
@@ -88,7 +88,7 @@ python main.py --mode basic --diagnostics --epochs 5 --optimizer SGD --lr 0.001
 | `--seed`       | `67`    | Random seed for reproducibility                             |
 | `--diagnostics`| `False` | Enable detailed diagnostics output                          |
 
-## 📊 Visualizations
+## Visualizations
 
 The `analysis/visuals.py` module automatically generates plots in the `fig/` directory. Key metrics include:
 
@@ -98,7 +98,7 @@ The `analysis/visuals.py` module automatically generates plots in the `fig/` dir
 
 3. **Loss & Accuracy Curves**: Standard training curves to confirm that both frameworks follow the same optimization trajectory.
 
-## 🧠 Implementation Details
+## Implementation Details
 
 ### The `im2col` Operation
 Instead of using slow nested loops for convolution, this framework uses `im2col` to flatten input patches into a matrix. This converts the convolution operation into a single large Matrix Multiplication (GEMM):
