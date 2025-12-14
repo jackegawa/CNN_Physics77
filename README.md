@@ -104,7 +104,7 @@ The `analysis/visuals.py` module automatically generates plots in the `fig/` dir
 Instead of using slow nested loops for convolution, this framework uses `im2col` to flatten input patches into a matrix. This converts the convolution operation into a single large Matrix Multiplication (GEMM):
 
 $$
-\text{Output} = \text{Conv2D}(\text{Input}, \text{Filters}) \implies \text{Output\_matrix} = \text{Input\_matrix} \times \text{Filter\_matrix}
+\text{Output} = \text{Conv2D}(\text{Input}, \text{Filters}) \implies \text{Output}_\text{matrix} = \text{Input}_\text{matrix} \times \text{Filter}_\text{matrix}
 $$
 
 ### Autograd Engine
