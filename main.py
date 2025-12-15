@@ -84,7 +84,7 @@ if __name__ == "__main__":
                         help="Select execution mode: 'basic' (1v1) or 'grid' (4-way search).")
     parser.add_argument("--epochs", type=int, default=5, help="Number of training epochs.")
     parser.add_argument("--batch_size", type=int, default=64, help="Input batch size.")
-    parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate.")
+    parser.add_argument("--lr", type=float, default=1e-2, help="Learning rate.")
     parser.add_argument("--seed", type=int, default=67, help="Random seed for reproducibility.")
     parser.add_argument("--optimizer", type=str, default="Adam", choices=["SGD", "Adam"], 
                         help="Optimizer type (only used in basic mode).")
