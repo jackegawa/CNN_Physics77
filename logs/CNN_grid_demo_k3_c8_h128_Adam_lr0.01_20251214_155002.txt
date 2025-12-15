@@ -1,0 +1,128 @@
+[INFO] Loading MNIST dataset... Done. (Train: 60000, Test: 10000)
+[INFO] Initial Memory: 219.60 MB | Peak Memory: 431.28 MB
+[INFO] Model initialized with 693714 parameters.
+
+[TRAIN] EPOCH 1/5
+------------------------------------------------------------
+   Step   1/938 (  0.1%) | Loss: 2.3026 | Mem: 260.1 MB
+   Step  51/938 (  5.4%) | Loss: 0.2481 | Mem: 260.1 MB
+   Step 101/938 ( 10.8%) | Loss: 0.2750 | Mem: 260.1 MB
+   Step 151/938 ( 16.1%) | Loss: 0.1126 | Mem: 260.1 MB
+   Step 201/938 ( 21.4%) | Loss: 0.0642 | Mem: 260.1 MB
+   Step 251/938 ( 26.8%) | Loss: 0.1042 | Mem: 260.2 MB
+   Step 301/938 ( 32.1%) | Loss: 0.0384 | Mem: 260.2 MB
+   Step 351/938 ( 37.4%) | Loss: 0.1337 | Mem: 260.2 MB
+   Step 401/938 ( 42.8%) | Loss: 0.2005 | Mem: 260.2 MB
+   Step 451/938 ( 48.1%) | Loss: 0.0969 | Mem: 260.2 MB
+   Step 501/938 ( 53.4%) | Loss: 0.0230 | Mem: 260.2 MB
+   Step 551/938 ( 58.7%) | Loss: 0.1439 | Mem: 260.2 MB
+   Step 601/938 ( 64.1%) | Loss: 0.1074 | Mem: 260.2 MB
+   Step 651/938 ( 69.4%) | Loss: 0.0998 | Mem: 260.2 MB
+   Step 701/938 ( 74.7%) | Loss: 0.1765 | Mem: 260.2 MB
+   Step 751/938 ( 80.1%) | Loss: 0.1033 | Mem: 260.2 MB
+   Step 801/938 ( 85.4%) | Loss: 0.0510 | Mem: 260.2 MB
+   Step 851/938 ( 90.7%) | Loss: 0.0894 | Mem: 260.2 MB
+   Step 901/938 ( 96.1%) | Loss: 0.0785 | Mem: 260.2 MB
+   Step 938/938 (100.0%) | Loss: 0.1056 | Mem: 251.3 MB
+[EVAL]  Validating...[RESULT] Epoch 1 Finished in 26.62s | Train Loss: 0.1698 | Test Acc: 97.16% | Peak Mem: 845.3 MB
+
+[TRAIN] EPOCH 2/5
+------------------------------------------------------------
+   Step   1/938 (  0.1%) | Loss: 0.0876 | Mem: 538.8 MB
+   Step  51/938 (  5.4%) | Loss: 0.0921 | Mem: 538.8 MB
+   Step 101/938 ( 10.8%) | Loss: 0.0090 | Mem: 538.8 MB
+   Step 151/938 ( 16.1%) | Loss: 0.0285 | Mem: 538.8 MB
+   Step 201/938 ( 21.4%) | Loss: 0.0156 | Mem: 538.8 MB
+   Step 251/938 ( 26.8%) | Loss: 0.1485 | Mem: 538.8 MB
+   Step 301/938 ( 32.1%) | Loss: 0.0307 | Mem: 538.8 MB
+   Step 351/938 ( 37.4%) | Loss: 0.0102 | Mem: 538.8 MB
+   Step 401/938 ( 42.8%) | Loss: 0.0327 | Mem: 538.8 MB
+   Step 451/938 ( 48.1%) | Loss: 0.0152 | Mem: 538.8 MB
+   Step 501/938 ( 53.4%) | Loss: 0.0856 | Mem: 538.8 MB
+   Step 551/938 ( 58.7%) | Loss: 0.0332 | Mem: 538.9 MB
+   Step 601/938 ( 64.1%) | Loss: 0.1090 | Mem: 538.9 MB
+   Step 651/938 ( 69.4%) | Loss: 0.0095 | Mem: 538.9 MB
+   Step 701/938 ( 74.7%) | Loss: 0.0311 | Mem: 538.9 MB
+   Step 751/938 ( 80.1%) | Loss: 0.0721 | Mem: 538.9 MB
+   Step 801/938 ( 85.4%) | Loss: 0.0047 | Mem: 538.9 MB
+   Step 851/938 ( 90.7%) | Loss: 0.0068 | Mem: 538.9 MB
+   Step 901/938 ( 96.1%) | Loss: 0.0639 | Mem: 538.9 MB
+   Step 938/938 (100.0%) | Loss: 0.0063 | Mem: 530.0 MB
+[EVAL]  Validating...[RESULT] Epoch 2 Finished in 23.40s | Train Loss: 0.0641 | Test Acc: 97.74% | Peak Mem: 845.4 MB
+
+[TRAIN] EPOCH 3/5
+------------------------------------------------------------
+   Step   1/938 (  0.1%) | Loss: 0.0333 | Mem: 538.9 MB
+   Step  51/938 (  5.4%) | Loss: 0.0022 | Mem: 538.9 MB
+   Step 101/938 ( 10.8%) | Loss: 0.0994 | Mem: 538.9 MB
+   Step 151/938 ( 16.1%) | Loss: 0.0055 | Mem: 538.9 MB
+   Step 201/938 ( 21.4%) | Loss: 0.0043 | Mem: 538.9 MB
+   Step 251/938 ( 26.8%) | Loss: 0.0367 | Mem: 538.9 MB
+   Step 301/938 ( 32.1%) | Loss: 0.0100 | Mem: 538.9 MB
+   Step 351/938 ( 37.4%) | Loss: 0.0219 | Mem: 538.9 MB
+   Step 401/938 ( 42.8%) | Loss: 0.0083 | Mem: 538.9 MB
+   Step 451/938 ( 48.1%) | Loss: 0.0026 | Mem: 538.9 MB
+   Step 501/938 ( 53.4%) | Loss: 0.0166 | Mem: 538.9 MB
+   Step 551/938 ( 58.7%) | Loss: 0.0042 | Mem: 538.9 MB
+   Step 601/938 ( 64.1%) | Loss: 0.0607 | Mem: 538.9 MB
+   Step 651/938 ( 69.4%) | Loss: 0.0529 | Mem: 538.9 MB
+   Step 701/938 ( 74.7%) | Loss: 0.1277 | Mem: 538.9 MB
+   Step 751/938 ( 80.1%) | Loss: 0.0070 | Mem: 538.9 MB
+   Step 801/938 ( 85.4%) | Loss: 0.0250 | Mem: 538.9 MB
+   Step 851/938 ( 90.7%) | Loss: 0.0401 | Mem: 538.9 MB
+   Step 901/938 ( 96.1%) | Loss: 0.0027 | Mem: 538.9 MB
+   Step 938/938 (100.0%) | Loss: 0.0483 | Mem: 530.0 MB
+[EVAL]  Validating...[RESULT] Epoch 3 Finished in 24.23s | Train Loss: 0.0439 | Test Acc: 97.71% | Peak Mem: 845.4 MB
+
+[TRAIN] EPOCH 4/5
+------------------------------------------------------------
+   Step   1/938 (  0.1%) | Loss: 0.0881 | Mem: 538.9 MB
+   Step  51/938 (  5.4%) | Loss: 0.0122 | Mem: 538.9 MB
+   Step 101/938 ( 10.8%) | Loss: 0.0084 | Mem: 538.9 MB
+   Step 151/938 ( 16.1%) | Loss: 0.0007 | Mem: 538.9 MB
+   Step 201/938 ( 21.4%) | Loss: 0.0016 | Mem: 538.9 MB
+   Step 251/938 ( 26.8%) | Loss: 0.0029 | Mem: 538.9 MB
+   Step 301/938 ( 32.1%) | Loss: 0.0845 | Mem: 539.0 MB
+   Step 351/938 ( 37.4%) | Loss: 0.0003 | Mem: 539.0 MB
+   Step 401/938 ( 42.8%) | Loss: 0.0015 | Mem: 539.0 MB
+   Step 451/938 ( 48.1%) | Loss: 0.0044 | Mem: 539.0 MB
+   Step 501/938 ( 53.4%) | Loss: 0.0309 | Mem: 539.0 MB
+   Step 551/938 ( 58.7%) | Loss: 0.0200 | Mem: 539.0 MB
+   Step 601/938 ( 64.1%) | Loss: 0.0094 | Mem: 539.0 MB
+   Step 651/938 ( 69.4%) | Loss: 0.1044 | Mem: 539.0 MB
+   Step 701/938 ( 74.7%) | Loss: 0.0932 | Mem: 539.0 MB
+   Step 751/938 ( 80.1%) | Loss: 0.0009 | Mem: 539.0 MB
+   Step 801/938 ( 85.4%) | Loss: 0.1399 | Mem: 539.0 MB
+   Step 851/938 ( 90.7%) | Loss: 0.0204 | Mem: 539.0 MB
+   Step 901/938 ( 96.1%) | Loss: 0.0461 | Mem: 539.0 MB
+   Step 938/938 (100.0%) | Loss: 0.0110 | Mem: 530.1 MB
+[EVAL]  Validating...[RESULT] Epoch 4 Finished in 27.14s | Train Loss: 0.0327 | Test Acc: 97.82% | Peak Mem: 845.5 MB
+
+[TRAIN] EPOCH 5/5
+------------------------------------------------------------
+   Step   1/938 (  0.1%) | Loss: 0.0102 | Mem: 539.0 MB
+   Step  51/938 (  5.4%) | Loss: 0.0016 | Mem: 539.0 MB
+   Step 101/938 ( 10.8%) | Loss: 0.0012 | Mem: 539.0 MB
+   Step 151/938 ( 16.1%) | Loss: 0.0616 | Mem: 539.0 MB
+   Step 201/938 ( 21.4%) | Loss: 0.0076 | Mem: 539.0 MB
+   Step 251/938 ( 26.8%) | Loss: 0.0277 | Mem: 539.0 MB
+   Step 301/938 ( 32.1%) | Loss: 0.0226 | Mem: 539.0 MB
+   Step 351/938 ( 37.4%) | Loss: 0.0047 | Mem: 539.0 MB
+   Step 401/938 ( 42.8%) | Loss: 0.0021 | Mem: 539.0 MB
+   Step 451/938 ( 48.1%) | Loss: 0.0324 | Mem: 539.0 MB
+   Step 501/938 ( 53.4%) | Loss: 0.0004 | Mem: 539.0 MB
+   Step 551/938 ( 58.7%) | Loss: 0.0129 | Mem: 539.0 MB
+   Step 601/938 ( 64.1%) | Loss: 0.0277 | Mem: 539.0 MB
+   Step 651/938 ( 69.4%) | Loss: 0.0041 | Mem: 539.1 MB
+   Step 701/938 ( 74.7%) | Loss: 0.1008 | Mem: 539.1 MB
+   Step 751/938 ( 80.1%) | Loss: 0.0003 | Mem: 539.1 MB
+   Step 801/938 ( 85.4%) | Loss: 0.0283 | Mem: 539.1 MB
+   Step 851/938 ( 90.7%) | Loss: 0.0002 | Mem: 539.1 MB
+   Step 901/938 ( 96.1%) | Loss: 0.0668 | Mem: 539.1 MB
+   Step 938/938 (100.0%) | Loss: 0.0061 | Mem: 530.2 MB
+[EVAL]  Validating...[RESULT] Epoch 5 Finished in 22.92s | Train Loss: 0.0322 | Test Acc: 97.37% | Peak Mem: 845.7 MB
+
+============================================================
+[INFO] All training completed in 128.87s
+
+[INFO] Log saved successfully to: ./logs/CNN_grid_demo_k3_c8_h128_Adam_lr0.01_20251214_155002.json
